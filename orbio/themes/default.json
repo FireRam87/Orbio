@@ -1,0 +1,33 @@
+{
+    "name": "Orbio Blue",
+    "author": "Orbio",
+    "version": "1.0",
+    "base": "dark",
+    "colors": {
+        "background": "#0a0a0f",
+        "surface": "#12121a",
+        "surface_elevated": "#1a1a25",
+        "primary": "#4da6ff",
+        "primary_glow": "#1a8cff",
+        "accent": "#66b3ff",
+        "text": "#e8e8f0",
+        "text_secondary": "#8888aa",
+        "border": "#2a2a3a",
+        "tab_active": "#4da6ff",
+        "tab_inactive": "#2a2a3a",
+        "fire_button": "#ff4444",
+        "success": "#44dd88",
+        "warning": "#ffaa33",
+        "error": "#ff4466"
+    },
+    "glow": {
+        "enabled": true,
+        "intensity": 0.7,
+        "color": "#4da6ff",
+        "radius": 12
+    },
+    "fonts": {
+        "ui": "Inter",
+        "mono": "JetBrains Mono"
+    }
+}
