@@ -10,6 +10,7 @@ from PyQt6.QtWebEngineCore import QWebEngineProfile
 
 from orbio.webview import OrbioWebView
 from orbio.ui.tab_bar import OrbioTabBar
+from orbio.ui.radial_tabs import RadialTabRing
 from orbio.engine.privacy import PrivacyEngine
 
 
@@ -20,6 +21,7 @@ class OrbioBrowserWindow(QMainWindow):
         super().__init__()
         self.tabs: list[OrbioWebView] = []
         self.active_tab_index = -1
+        self._radial_mode = True
 
         self._setup_privacy()
         self._setup_profile()
@@ -54,12 +56,21 @@ class OrbioBrowserWindow(QMainWindow):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        # Tab bar
+        # Radial tab ring (signature UI)
+        self.radial_ring = RadialTabRing()
+        self.radial_ring.tab_activated.connect(self._switch_to_tab)
+        self.radial_ring.new_tab_requested.connect(
+            lambda: self._new_tab("https://duckduckgo.com")
+        )
+        layout.addWidget(self.radial_ring)
+
+        # Linear tab bar (alternative mode)
         self.tab_bar = OrbioTabBar()
         self.tab_bar.tab_activated.connect(self._switch_to_tab)
         self.tab_bar.new_tab_requested.connect(
             lambda: self._new_tab("https://duckduckgo.com")
         )
+        self.tab_bar.setVisible(not self._radial_mode)
         layout.addWidget(self.tab_bar)
 
         # Navigation bar
@@ -160,6 +171,7 @@ class OrbioBrowserWindow(QMainWindow):
         QShortcut(QKeySequence("Alt+Right"), self, self._go_forward)
         QShortcut(QKeySequence("Ctrl+Tab"), self, self._next_tab)
         QShortcut(QKeySequence("Ctrl+Shift+Tab"), self, self._prev_tab)
+        QShortcut(QKeySequence("Ctrl+Shift+R"), self, self._toggle_tab_mode)
 
     def _new_tab(self, url: str = "https://duckduckgo.com"):
         """Create a new tab and navigate to the URL."""
@@ -170,6 +182,7 @@ class OrbioBrowserWindow(QMainWindow):
         self.tabs.append(view)
         self.web_stack.addWidget(view)
         self.tab_bar.add_tab("New Tab")
+        self.radial_ring.add_tab("New Tab")
         self._switch_to_tab(len(self.tabs) - 1)
         view.navigate(url)
 
@@ -183,6 +196,7 @@ class OrbioBrowserWindow(QMainWindow):
         self.web_stack.removeWidget(view)
         view.deleteLater()
         self.tab_bar.remove_tab(idx)
+        self.radial_ring.remove_tab(idx)
 
         new_idx = min(idx, len(self.tabs) - 1)
         self._switch_to_tab(new_idx)
@@ -193,6 +207,7 @@ class OrbioBrowserWindow(QMainWindow):
             self.active_tab_index = index
             self.web_stack.setCurrentWidget(self.tabs[index])
             self.tab_bar.set_active(index)
+            self.radial_ring.set_active(index)
             self._update_url_bar()
             title = self.tabs[index].title() or "Orbio"
             self.setWindowTitle(f"{title} — Orbio")
@@ -236,13 +251,19 @@ class OrbioBrowserWindow(QMainWindow):
             if url and url != "about:blank":
                 self.url_bar.setText(url)
 
+    def _toggle_tab_mode(self):
+        """Toggle between radial and linear tab modes."""
+        self._radial_mode = not self._radial_mode
+        self.radial_ring.setVisible(self._radial_mode)
+        self.tab_bar.setVisible(not self._radial_mode)
+
     def _on_tab_title_changed(self, title: str):
         """Update window title when the active tab title changes."""
-        view = self._current_view()
         sender = self.sender()
         if sender in self.tabs:
             idx = self.tabs.index(sender)
             self.tab_bar.set_tab_title(idx, title)
+            self.radial_ring.set_tab_title(idx, title)
             if idx == self.active_tab_index:
                 self.setWindowTitle(f"{title} — Orbio")
 
