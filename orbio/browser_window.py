@@ -12,6 +12,7 @@ from orbio.ui.tab_bar import OrbioTabBar
 from orbio.ui.radial_tabs import RadialTabRing
 from orbio.ui.arc_navbar import ArcNavBar
 from orbio.ui.fire_button import FireButton
+from orbio.ui.privacy_dash import PrivacyDashboard
 from orbio.engine.privacy import PrivacyEngine
 from orbio.engine.cookies import CookieManager
 
@@ -94,6 +95,9 @@ class OrbioBrowserWindow(QMainWindow):
         self.fire_button.burn_session.connect(lambda: self._burn_data("session"))
         self.fire_button.burn_everything.connect(lambda: self._burn_data("everything"))
 
+        # Privacy dashboard overlay
+        self.privacy_dash = PrivacyDashboard(self.privacy_engine.stats, self)
+
 
     def _apply_dark_style(self):
         """Apply the dark Orbio theme to the window."""
@@ -115,6 +119,7 @@ class OrbioBrowserWindow(QMainWindow):
         QShortcut(QKeySequence("Ctrl+Tab"), self, self._next_tab)
         QShortcut(QKeySequence("Ctrl+Shift+Tab"), self, self._prev_tab)
         QShortcut(QKeySequence("Ctrl+Shift+R"), self, self._toggle_tab_mode)
+        QShortcut(QKeySequence("Ctrl+Shift+P"), self, self._toggle_privacy_dash)
 
     def _new_tab(self, url: str = "https://duckduckgo.com"):
         """Create a new tab and navigate to the URL."""
@@ -225,6 +230,18 @@ class OrbioBrowserWindow(QMainWindow):
         view = self._current_view()
         if view and view == self.sender():
             self.arc_nav.set_url(url.toString())
+
+    def _toggle_privacy_dash(self):
+        """Toggle the privacy dashboard overlay."""
+        if self.privacy_dash.isVisible():
+            self.privacy_dash.hide()
+        else:
+            self.privacy_dash.setGeometry(
+                self.width() // 2 - 250,
+                self.height() // 2 - 200,
+                500, 400
+            )
+            self.privacy_dash.show_dashboard()
 
     def _burn_data(self, level: str):
         """Clear browsing data at the specified level."""
