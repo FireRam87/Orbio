@@ -1,0 +1,40 @@
+app-id: org.orbio.Browser
+runtime: org.kde.Platform
+runtime-version: '6.7'
+sdk: org.kde.Sdk
+command: orbio
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --device=dri
+  - --filesystem=xdg-download
+
+modules:
+  - name: orbio
+    buildsystem: simple
+    build-commands:
+      - pip3 install --no-deps --prefix=/app .
+    sources:
+      - type: dir
+        path: ..
+    modules:
+      - name: python3-pyqt6
+        buildsystem: simple
+        build-commands:
+          - pip3 install --no-deps --prefix=/app PyQt6
+        sources:
+          - type: archive
+            url: https://pypi.io/packages/source/P/PyQt6/PyQt6-6.6.0.tar.gz
+            sha256: placeholder
+
+      - name: python3-pyqt6-webengine
+        buildsystem: simple
+        build-commands:
+          - pip3 install --no-deps --prefix=/app PyQt6-WebEngine
+        sources:
+          - type: archive
+            url: https://pypi.io/packages/source/P/PyQt6-WebEngine/PyQt6_WebEngine-6.6.0.tar.gz
+            sha256: placeholder

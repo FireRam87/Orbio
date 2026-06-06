@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pyqt6 python3-pyqt6.qtwebengine
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Import check
+        run: |
+          python -c "from orbio.browser_window import OrbioBrowserWindow; print('OK')"
+          python -c "from orbio.engine.filters import FilterListParser; print('OK')"
+          python -c "from orbio.themes.engine import ThemeEngine; print('OK')"
+
+      - name: Filter engine tests
+        run: |
+          python -c "
+          from orbio.engine.filters import FilterListParser
+          p = FilterListParser()
+          p.load_from_string('||doubleclick.net^\n||google-analytics.com^\n@@||example.com^')
+          assert p.should_block('https://doubleclick.net/ad.js')
+          assert not p.should_block('https://example.com/page')
+          assert p.should_block('https://google-analytics.com/track')
+          assert not p.should_block('https://github.com/page')
+          print('All filter tests passed')
+          "

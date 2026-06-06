@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Orbio
+Comment=Privacy-first browser with radial UI
+Exec=orbio
+Icon=org.orbio.Browser
+Terminal=false
+Type=Application
+Categories=Network;WebBrowser;
+Keywords=browser;web;privacy;
+MimeType=text/html;text/xml;application/xhtml+xml;x-scheme-handler/http;x-scheme-handler/https;

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.orbio.Browser</id>
+  <name>Orbio</name>
+  <summary>Privacy-first browser with radial UI</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <description>
+    <p>
+      Orbio is a privacy-first Linux browser that breaks the rectangular UI paradigm.
+      It features a radial tab ring, arc navigation, built-in tracker/ad blocking,
+      and a theme engine — all without any external extensions or accounts needed.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>Radial tab ring — tabs arranged in circular arcs</li>
+      <li>Arc navigation bar with spatial controls</li>
+      <li>Built-in ad and tracker blocking</li>
+      <li>Fire button to instantly clear browsing data</li>
+      <li>Privacy dashboard with real-time stats</li>
+      <li>Theme engine with customizable glow effects</li>
+      <li>DuckDuckGo as default search engine</li>
+    </ul>
+  </description>
+  <url type="homepage">https://github.com/FireRam87/Orbio</url>
+  <url type="bugtracker">https://github.com/FireRam87/Orbio/issues</url>
+  <developer id="io.github.fireram87">
+    <name>FireRam</name>
+  </developer>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="0.1.0" date="2026-06-06">
+      <description>
+        <p>Initial release with core browser, privacy engine, and radial UI.</p>
+      </description>
+    </release>
+  </releases>
+</component>
