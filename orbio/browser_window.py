@@ -1,8 +1,7 @@
 """Main browser window for Orbio."""
 
 from PyQt6.QtWidgets import (
-    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLineEdit, QPushButton, QStackedWidget, QLabel
+    QMainWindow, QWidget, QVBoxLayout, QStackedWidget
 )
 from PyQt6.QtCore import Qt, QUrl, QSize
 from PyQt6.QtGui import QIcon, QKeySequence, QShortcut
@@ -11,6 +10,7 @@ from PyQt6.QtWebEngineCore import QWebEngineProfile
 from orbio.webview import OrbioWebView
 from orbio.ui.tab_bar import OrbioTabBar
 from orbio.ui.radial_tabs import RadialTabRing
+from orbio.ui.arc_navbar import ArcNavBar
 from orbio.engine.privacy import PrivacyEngine
 
 
@@ -73,84 +73,18 @@ class OrbioBrowserWindow(QMainWindow):
         self.tab_bar.setVisible(not self._radial_mode)
         layout.addWidget(self.tab_bar)
 
-        # Navigation bar
-        nav_bar = self._create_nav_bar()
-        layout.addWidget(nav_bar)
+        # Arc navigation bar
+        self.arc_nav = ArcNavBar()
+        self.arc_nav.navigate_requested.connect(self._on_arc_navigate)
+        self.arc_nav.back_requested.connect(self._go_back)
+        self.arc_nav.forward_requested.connect(self._go_forward)
+        self.arc_nav.reload_requested.connect(self._reload)
+        layout.addWidget(self.arc_nav)
 
         # Web content stack
         self.web_stack = QStackedWidget()
         layout.addWidget(self.web_stack)
 
-    def _create_nav_bar(self) -> QWidget:
-        """Create the navigation bar."""
-        nav = QWidget()
-        nav.setFixedHeight(48)
-        nav.setStyleSheet("background-color: #12121a; border-bottom: 1px solid #2a2a3a;")
-
-        layout = QHBoxLayout(nav)
-        layout.setContentsMargins(8, 4, 8, 4)
-        layout.setSpacing(4)
-
-        btn_style = """
-            QPushButton {
-                background: transparent;
-                color: #8888aa;
-                border: none;
-                border-radius: 6px;
-                padding: 6px 10px;
-                font-size: 14px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background: #1a1a25;
-                color: #4da6ff;
-            }
-            QPushButton:pressed {
-                background: #2a2a3a;
-            }
-        """
-
-        self.btn_back = QPushButton("←")
-        self.btn_back.setStyleSheet(btn_style)
-        self.btn_back.clicked.connect(self._go_back)
-        layout.addWidget(self.btn_back)
-
-        self.btn_forward = QPushButton("→")
-        self.btn_forward.setStyleSheet(btn_style)
-        self.btn_forward.clicked.connect(self._go_forward)
-        layout.addWidget(self.btn_forward)
-
-        self.btn_reload = QPushButton("↻")
-        self.btn_reload.setStyleSheet(btn_style)
-        self.btn_reload.clicked.connect(self._reload)
-        layout.addWidget(self.btn_reload)
-
-        self.url_bar = QLineEdit()
-        self.url_bar.setPlaceholderText("Search with DuckDuckGo or enter URL...")
-        self.url_bar.setStyleSheet("""
-            QLineEdit {
-                background: #0a0a0f;
-                color: #e8e8f0;
-                border: 1px solid #2a2a3a;
-                border-radius: 8px;
-                padding: 8px 14px;
-                font-size: 13px;
-                selection-background-color: #4da6ff;
-            }
-            QLineEdit:focus {
-                border-color: #4da6ff;
-                box-shadow: 0 0 8px rgba(77, 166, 255, 0.3);
-            }
-        """)
-        self.url_bar.returnPressed.connect(self._navigate_to_url)
-        layout.addWidget(self.url_bar)
-
-        self.btn_new_tab = QPushButton("+")
-        self.btn_new_tab.setStyleSheet(btn_style)
-        self.btn_new_tab.clicked.connect(lambda: self._new_tab("https://duckduckgo.com"))
-        layout.addWidget(self.btn_new_tab)
-
-        return nav
 
     def _apply_dark_style(self):
         """Apply the dark Orbio theme to the window."""
@@ -218,11 +152,12 @@ class OrbioBrowserWindow(QMainWindow):
             return self.tabs[self.active_tab_index]
         return None
 
-    def _navigate_to_url(self):
-        """Navigate the current tab to the URL bar content."""
+    def _on_arc_navigate(self, text: str):
+        """Handle navigation from the arc nav bar."""
         view = self._current_view()
         if view:
-            view.navigate(self.url_bar.text())
+            view.navigate(text)
+
 
     def _go_back(self):
         view = self._current_view()
@@ -240,8 +175,7 @@ class OrbioBrowserWindow(QMainWindow):
             view.reload()
 
     def _focus_url_bar(self):
-        self.url_bar.setFocus()
-        self.url_bar.selectAll()
+        self.arc_nav.focus_url()
 
     def _update_url_bar(self):
         """Update the URL bar with the current tab's URL."""
@@ -249,7 +183,7 @@ class OrbioBrowserWindow(QMainWindow):
         if view:
             url = view.url().toString()
             if url and url != "about:blank":
-                self.url_bar.setText(url)
+                self.arc_nav.set_url(url)
 
     def _toggle_tab_mode(self):
         """Toggle between radial and linear tab modes."""
@@ -281,4 +215,4 @@ class OrbioBrowserWindow(QMainWindow):
         """Update URL bar when navigation occurs."""
         view = self._current_view()
         if view and view == self.sender():
-            self.url_bar.setText(url.toString())
+            self.arc_nav.set_url(url.toString())
