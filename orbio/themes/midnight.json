@@ -1,0 +1,33 @@
+{
+    "name": "Midnight Purple",
+    "author": "Orbio",
+    "version": "1.0",
+    "base": "dark",
+    "colors": {
+        "background": "#0a0812",
+        "surface": "#14101e",
+        "surface_elevated": "#1e1830",
+        "primary": "#a855f7",
+        "primary_glow": "#7c3aed",
+        "accent": "#c084fc",
+        "text": "#ede8f5",
+        "text_secondary": "#8878aa",
+        "border": "#2d2544",
+        "tab_active": "#a855f7",
+        "tab_inactive": "#2d2544",
+        "fire_button": "#f43f5e",
+        "success": "#34d399",
+        "warning": "#fbbf24",
+        "error": "#f43f5e"
+    },
+    "glow": {
+        "enabled": true,
+        "intensity": 0.8,
+        "color": "#a855f7",
+        "radius": 14
+    },
+    "fonts": {
+        "ui": "Inter",
+        "mono": "JetBrains Mono"
+    }
+}

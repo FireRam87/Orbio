@@ -1,0 +1,33 @@
+{
+    "name": "Emerald Night",
+    "author": "Orbio",
+    "version": "1.0",
+    "base": "dark",
+    "colors": {
+        "background": "#080f0a",
+        "surface": "#0f1a12",
+        "surface_elevated": "#162218",
+        "primary": "#10b981",
+        "primary_glow": "#059669",
+        "accent": "#34d399",
+        "text": "#e8f5ee",
+        "text_secondary": "#78aa88",
+        "border": "#1e3a28",
+        "tab_active": "#10b981",
+        "tab_inactive": "#1e3a28",
+        "fire_button": "#ef4444",
+        "success": "#10b981",
+        "warning": "#f59e0b",
+        "error": "#ef4444"
+    },
+    "glow": {
+        "enabled": true,
+        "intensity": 0.6,
+        "color": "#10b981",
+        "radius": 10
+    },
+    "fonts": {
+        "ui": "Inter",
+        "mono": "Fira Code"
+    }
+}

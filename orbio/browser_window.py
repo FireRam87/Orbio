@@ -15,6 +15,7 @@ from orbio.ui.fire_button import FireButton
 from orbio.ui.privacy_dash import PrivacyDashboard
 from orbio.engine.privacy import PrivacyEngine
 from orbio.engine.cookies import CookieManager
+from orbio.themes.engine import ThemeEngine
 
 
 class OrbioBrowserWindow(QMainWindow):
@@ -27,6 +28,7 @@ class OrbioBrowserWindow(QMainWindow):
         self._radial_mode = True
 
         self._setup_privacy()
+        self._setup_theme()
         self._setup_profile()
         self._setup_ui()
         self._setup_shortcuts()
@@ -35,6 +37,12 @@ class OrbioBrowserWindow(QMainWindow):
     def _setup_privacy(self):
         """Initialize the privacy/blocking engine."""
         self.privacy_engine = PrivacyEngine(parent=self)
+
+    def _setup_theme(self):
+        """Initialize the theme engine."""
+        self.theme_engine = ThemeEngine(parent=self)
+        self.theme_engine.load_default()
+        self.theme_engine.theme_changed.connect(self._apply_theme)
 
     def _setup_profile(self):
         """Create a private-by-default web engine profile."""
@@ -100,12 +108,12 @@ class OrbioBrowserWindow(QMainWindow):
 
 
     def _apply_dark_style(self):
-        """Apply the dark Orbio theme to the window."""
-        self.setStyleSheet("""
-            QMainWindow {
-                background-color: #0a0a0f;
-            }
-        """)
+        """Apply the current theme stylesheet."""
+        self.setStyleSheet(self.theme_engine.generate_stylesheet())
+
+    def _apply_theme(self, theme):
+        """Handle theme change signal."""
+        self.setStyleSheet(self.theme_engine.generate_stylesheet())
 
     def _setup_shortcuts(self):
         """Set up keyboard shortcuts."""
