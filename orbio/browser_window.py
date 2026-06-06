@@ -1,7 +1,7 @@
 """Main browser window for Orbio."""
 
 from PyQt6.QtWidgets import (
-    QMainWindow, QWidget, QVBoxLayout, QStackedWidget
+    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget
 )
 from PyQt6.QtCore import Qt, QUrl, QSize
 from PyQt6.QtGui import QIcon, QKeySequence, QShortcut
@@ -11,7 +11,9 @@ from orbio.webview import OrbioWebView
 from orbio.ui.tab_bar import OrbioTabBar
 from orbio.ui.radial_tabs import RadialTabRing
 from orbio.ui.arc_navbar import ArcNavBar
+from orbio.ui.fire_button import FireButton
 from orbio.engine.privacy import PrivacyEngine
+from orbio.engine.cookies import CookieManager
 
 
 class OrbioBrowserWindow(QMainWindow):
@@ -84,6 +86,13 @@ class OrbioBrowserWindow(QMainWindow):
         # Web content stack
         self.web_stack = QStackedWidget()
         layout.addWidget(self.web_stack)
+
+        # Fire button (floating bottom-right)
+        self.fire_button = FireButton(self)
+        self.fire_button.burn_15min.connect(lambda: self._burn_data("15min"))
+        self.fire_button.burn_1hour.connect(lambda: self._burn_data("1hour"))
+        self.fire_button.burn_session.connect(lambda: self._burn_data("session"))
+        self.fire_button.burn_everything.connect(lambda: self._burn_data("everything"))
 
 
     def _apply_dark_style(self):
@@ -216,3 +225,30 @@ class OrbioBrowserWindow(QMainWindow):
         view = self._current_view()
         if view and view == self.sender():
             self.arc_nav.set_url(url.toString())
+
+    def _burn_data(self, level: str):
+        """Clear browsing data at the specified level."""
+        cookie_mgr = CookieManager(self.profile)
+
+        if level == "everything":
+            cookie_mgr.clear_all()
+            self.profile.clearHttpCache()
+            self.profile.clearAllVisitedLinks()
+        elif level == "session":
+            cookie_mgr.clear_session()
+            self.profile.clearHttpCache()
+        elif level == "1hour":
+            cookie_mgr.clear_all()
+            self.profile.clearHttpCache()
+        elif level == "15min":
+            cookie_mgr.clear_session()
+
+        self.privacy_engine.stats.reset()
+
+    def resizeEvent(self, event):
+        """Reposition floating elements on resize."""
+        super().resizeEvent(event)
+        self.fire_button.move(
+            self.width() - self.fire_button.width() - 20,
+            self.height() - self.fire_button.height() - 20
+        )
