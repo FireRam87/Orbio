@@ -9,6 +9,7 @@ from PyQt6.QtGui import QIcon, QKeySequence, QShortcut
 from PyQt6.QtWebEngineCore import QWebEngineProfile
 
 from orbio.webview import OrbioWebView
+from orbio.ui.tab_bar import OrbioTabBar
 
 
 class OrbioBrowserWindow(QMainWindow):
@@ -45,6 +46,14 @@ class OrbioBrowserWindow(QMainWindow):
         layout = QVBoxLayout(central)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
+
+        # Tab bar
+        self.tab_bar = OrbioTabBar()
+        self.tab_bar.tab_activated.connect(self._switch_to_tab)
+        self.tab_bar.new_tab_requested.connect(
+            lambda: self._new_tab("https://duckduckgo.com")
+        )
+        layout.addWidget(self.tab_bar)
 
         # Navigation bar
         nav_bar = self._create_nav_bar()
@@ -142,6 +151,8 @@ class OrbioBrowserWindow(QMainWindow):
         QShortcut(QKeySequence("F5"), self, self._reload)
         QShortcut(QKeySequence("Alt+Left"), self, self._go_back)
         QShortcut(QKeySequence("Alt+Right"), self, self._go_forward)
+        QShortcut(QKeySequence("Ctrl+Tab"), self, self._next_tab)
+        QShortcut(QKeySequence("Ctrl+Shift+Tab"), self, self._prev_tab)
 
     def _new_tab(self, url: str = "https://duckduckgo.com"):
         """Create a new tab and navigate to the URL."""
@@ -151,6 +162,7 @@ class OrbioBrowserWindow(QMainWindow):
 
         self.tabs.append(view)
         self.web_stack.addWidget(view)
+        self.tab_bar.add_tab("New Tab")
         self._switch_to_tab(len(self.tabs) - 1)
         view.navigate(url)
 
@@ -163,6 +175,7 @@ class OrbioBrowserWindow(QMainWindow):
         view = self.tabs.pop(idx)
         self.web_stack.removeWidget(view)
         view.deleteLater()
+        self.tab_bar.remove_tab(idx)
 
         new_idx = min(idx, len(self.tabs) - 1)
         self._switch_to_tab(new_idx)
@@ -172,6 +185,7 @@ class OrbioBrowserWindow(QMainWindow):
         if 0 <= index < len(self.tabs):
             self.active_tab_index = index
             self.web_stack.setCurrentWidget(self.tabs[index])
+            self.tab_bar.set_active(index)
             self._update_url_bar()
             title = self.tabs[index].title() or "Orbio"
             self.setWindowTitle(f"{title} — Orbio")
@@ -218,8 +232,22 @@ class OrbioBrowserWindow(QMainWindow):
     def _on_tab_title_changed(self, title: str):
         """Update window title when the active tab title changes."""
         view = self._current_view()
-        if view and view == self.sender():
-            self.setWindowTitle(f"{title} — Orbio")
+        sender = self.sender()
+        if sender in self.tabs:
+            idx = self.tabs.index(sender)
+            self.tab_bar.set_tab_title(idx, title)
+            if idx == self.active_tab_index:
+                self.setWindowTitle(f"{title} — Orbio")
+
+    def _next_tab(self):
+        """Switch to the next tab."""
+        if self.tabs:
+            self._switch_to_tab((self.active_tab_index + 1) % len(self.tabs))
+
+    def _prev_tab(self):
+        """Switch to the previous tab."""
+        if self.tabs:
+            self._switch_to_tab((self.active_tab_index - 1) % len(self.tabs))
 
     def _on_tab_url_changed(self, url: QUrl):
         """Update URL bar when navigation occurs."""
