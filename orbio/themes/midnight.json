@@ -15,7 +15,7 @@
         "border": "#2d2544",
         "tab_active": "#a855f7",
         "tab_inactive": "#2d2544",
-        "fire_button": "#f43f5e",
+        "freeze_button": "#a78bfa",
         "success": "#34d399",
         "warning": "#fbbf24",
         "error": "#f43f5e"

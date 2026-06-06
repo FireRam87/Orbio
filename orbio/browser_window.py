@@ -11,7 +11,7 @@ from orbio.webview import OrbioWebView
 from orbio.ui.tab_bar import OrbioTabBar
 from orbio.ui.radial_tabs import RadialTabRing
 from orbio.ui.arc_navbar import ArcNavBar
-from orbio.ui.fire_button import FireButton
+from orbio.ui.freeze_button import FreezeButton
 from orbio.ui.privacy_dash import PrivacyDashboard
 from orbio.engine.privacy import PrivacyEngine
 from orbio.engine.cookies import CookieManager
@@ -96,12 +96,12 @@ class OrbioBrowserWindow(QMainWindow):
         self.web_stack = QStackedWidget()
         layout.addWidget(self.web_stack)
 
-        # Fire button (floating bottom-right)
-        self.fire_button = FireButton(self)
-        self.fire_button.burn_15min.connect(lambda: self._burn_data("15min"))
-        self.fire_button.burn_1hour.connect(lambda: self._burn_data("1hour"))
-        self.fire_button.burn_session.connect(lambda: self._burn_data("session"))
-        self.fire_button.burn_everything.connect(lambda: self._burn_data("everything"))
+        # Freeze button (floating bottom-right)
+        self.freeze_button = FreezeButton(self)
+        self.freeze_button.freeze_15min.connect(lambda: self._freeze_data("15min"))
+        self.freeze_button.freeze_1hour.connect(lambda: self._freeze_data("1hour"))
+        self.freeze_button.freeze_session.connect(lambda: self._freeze_data("session"))
+        self.freeze_button.freeze_everything.connect(lambda: self._freeze_data("everything"))
 
         # Privacy dashboard overlay
         self.privacy_dash = PrivacyDashboard(self.privacy_engine.stats, self)
@@ -251,7 +251,7 @@ class OrbioBrowserWindow(QMainWindow):
             )
             self.privacy_dash.show_dashboard()
 
-    def _burn_data(self, level: str):
+    def _freeze_data(self, level: str):
         """Clear browsing data at the specified level."""
         cookie_mgr = CookieManager(self.profile)
 
@@ -273,7 +273,7 @@ class OrbioBrowserWindow(QMainWindow):
     def resizeEvent(self, event):
         """Reposition floating elements on resize."""
         super().resizeEvent(event)
-        self.fire_button.move(
-            self.width() - self.fire_button.width() - 20,
-            self.height() - self.fire_button.height() - 20
+        self.freeze_button.move(
+            self.width() - self.freeze_button.width() - 20,
+            self.height() - self.freeze_button.height() - 20
         )

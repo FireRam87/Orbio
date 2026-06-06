@@ -7,7 +7,7 @@ A privacy-first Linux browser that breaks the rectangular UI paradigm.
 - **Radial Tab Ring** — tabs arranged in a circular arc, not a flat bar
 - **Arc Navigation** — curved URL bar and spatial controls
 - **Built-in Privacy** — ad/tracker blocking with no extensions needed (EasyList + EasyPrivacy)
-- **Fire Button** — burn your browsing data instantly with particle animation
+- **Freeze Button** — frost your browsing data with ice crystal animations
 - **Privacy Dashboard** — real-time stats on blocked trackers and domains
 - **Theme Engine** — JSON-based themes with glow effects and accent colors
 - **DuckDuckGo Default** — private search out of the box
@@ -82,7 +82,7 @@ orbio/
     radial_tabs.py     # Circular tab ring
     tab_bar.py         # Linear tab bar (alt mode)
     arc_navbar.py      # Curved navigation bar
-    fire_button.py     # Fire button + animation
+    freeze_button.py   # Freeze button + frost animation
     privacy_dash.py    # Privacy stats overlay
   engine/
     privacy.py         # Request interception + blocking

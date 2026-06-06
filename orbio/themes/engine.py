@@ -23,7 +23,7 @@ class ThemeColors:
     border: str = "#2a2a3a"
     tab_active: str = "#4da6ff"
     tab_inactive: str = "#2a2a3a"
-    fire_button: str = "#ff4444"
+    freeze_button: str = "#4da6ff"
     success: str = "#44dd88"
     warning: str = "#ffaa33"
     error: str = "#ff4466"
