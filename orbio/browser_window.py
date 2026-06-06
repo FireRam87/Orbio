@@ -10,6 +10,7 @@ from PyQt6.QtWebEngineCore import QWebEngineProfile
 
 from orbio.webview import OrbioWebView
 from orbio.ui.tab_bar import OrbioTabBar
+from orbio.engine.privacy import PrivacyEngine
 
 
 class OrbioBrowserWindow(QMainWindow):
@@ -20,10 +21,15 @@ class OrbioBrowserWindow(QMainWindow):
         self.tabs: list[OrbioWebView] = []
         self.active_tab_index = -1
 
+        self._setup_privacy()
         self._setup_profile()
         self._setup_ui()
         self._setup_shortcuts()
         self._new_tab("https://duckduckgo.com")
+
+    def _setup_privacy(self):
+        """Initialize the privacy/blocking engine."""
+        self.privacy_engine = PrivacyEngine(parent=self)
 
     def _setup_profile(self):
         """Create a private-by-default web engine profile."""
@@ -32,6 +38,7 @@ class OrbioBrowserWindow(QMainWindow):
         self.profile.setPersistentCookiesPolicy(
             QWebEngineProfile.PersistentCookiesPolicy.AllowPersistentCookies
         )
+        self.profile.setUrlRequestInterceptor(self.privacy_engine.interceptor)
 
     def _setup_ui(self):
         """Build the browser UI."""
