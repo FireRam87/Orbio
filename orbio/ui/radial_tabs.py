@@ -4,11 +4,11 @@ import math
 from PyQt6.QtWidgets import QWidget, QToolTip
 from PyQt6.QtCore import (
     Qt, QRectF, QPointF, pyqtSignal, QPropertyAnimation,
-    QEasingCurve, pyqtProperty, QTimer
+    QEasingCurve, pyqtProperty, QTimer, QSize
 )
 from PyQt6.QtGui import (
     QPainter, QPen, QColor, QBrush, QFont, QFontMetrics,
-    QPainterPath, QRadialGradient, QLinearGradient, QMouseEvent
+    QPainterPath, QRadialGradient, QLinearGradient, QMouseEvent, QPixmap
 )
 
 
@@ -29,6 +29,8 @@ class RadialTabRing(QWidget):
         self._glow_intensity: float = 0.7
         self._rotation_offset: float = 0.0
         self._visible = True
+        self._thumbnails: dict[int, QPixmap] = {}
+        self._preview_widget: _ThumbnailPreview | None = None
 
         self.setMinimumHeight(80)
         self.setMaximumHeight(100)
@@ -79,6 +81,14 @@ class RadialTabRing(QWidget):
 
     def tab_count(self) -> int:
         return len(self._tabs)
+
+    def set_thumbnail(self, index: int, pixmap: QPixmap):
+        """Cache a tab thumbnail for hover preview."""
+        if pixmap and not pixmap.isNull():
+            self._thumbnails[index] = pixmap.scaled(
+                QSize(200, 140), Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation
+            )
 
     def paintEvent(self, event):
         if not self._tabs:
@@ -218,13 +228,36 @@ class RadialTabRing(QWidget):
         self._hover_index = max(index, -1)
         if old_hover != self._hover_index:
             self.update()
-            if index >= 0 and index < len(self._tabs):
-                QToolTip.showText(event.globalPosition().toPoint(),
-                                 self._tabs[index]["title"])
+            self._show_preview(index, event.globalPosition().toPoint())
 
     def leaveEvent(self, event):
         self._hover_index = -1
+        self._hide_preview()
         self.update()
+
+    def _show_preview(self, index: int, global_pos):
+        """Show a thumbnail preview tooltip for the hovered tab."""
+        if index < 0 or index not in self._thumbnails:
+            self._hide_preview()
+            if index >= 0 and index < len(self._tabs):
+                QToolTip.showText(global_pos, self._tabs[index]["title"])
+            return
+
+        QToolTip.hideText()
+
+        if self._preview_widget is None:
+            self._preview_widget = _ThumbnailPreview()
+
+        pixmap = self._thumbnails[index]
+        title = self._tabs[index]["title"] if index < len(self._tabs) else ""
+        self._preview_widget.set_content(pixmap, title)
+        self._preview_widget.move(global_pos.x() - 100, global_pos.y() + 20)
+        self._preview_widget.show()
+
+    def _hide_preview(self):
+        """Hide the thumbnail preview."""
+        if self._preview_widget:
+            self._preview_widget.hide()
 
     def _hit_test(self, pos: QPointF) -> int:
         """Determine which tab (or new-tab button) was clicked. -1 = none, -2 = new tab."""
@@ -263,3 +296,45 @@ class RadialTabRing(QWidget):
             return -2
 
         return -1
+
+
+class _ThumbnailPreview(QWidget):
+    """Floating thumbnail preview shown on tab hover."""
+
+    def __init__(self):
+        super().__init__(None, Qt.WindowType.ToolTip | Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setFixedSize(210, 160)
+        self._pixmap: QPixmap | None = None
+        self._title = ""
+
+    def set_content(self, pixmap: QPixmap, title: str):
+        self._pixmap = pixmap
+        self._title = title
+        self.update()
+
+    def paintEvent(self, event):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        # Background card
+        rect = QRectF(0, 0, self.width(), self.height())
+        p.setBrush(QBrush(QColor(12, 14, 22, 240)))
+        p.setPen(QPen(QColor(50, 70, 100), 1))
+        p.drawRoundedRect(rect, 8, 8)
+
+        # Thumbnail
+        if self._pixmap and not self._pixmap.isNull():
+            px = (self.width() - self._pixmap.width()) / 2
+            p.drawPixmap(int(px), 6, self._pixmap)
+
+        # Title below
+        if self._title:
+            p.setFont(QFont("Inter", 9))
+            p.setPen(QPen(QColor(200, 210, 230)))
+            fm = QFontMetrics(QFont("Inter", 9))
+            elided = fm.elidedText(self._title, Qt.TextElideMode.ElideRight, 190)
+            p.drawText(QRectF(8, self.height() - 22, self.width() - 16, 18),
+                       Qt.AlignmentFlag.AlignCenter, elided)
+
+        p.end()
